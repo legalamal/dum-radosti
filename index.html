@@ -146,22 +146,18 @@ const ICO = {
 };
 
 /* ============== BACKEND (Google Sheets via Apps Script) ============== */
-async function apiGet(params){
+async function apiCall(params){
   const qs = new URLSearchParams(params).toString();
   const res = await fetch(API_URL + '?' + qs);
   return res.json();
 }
-async function apiPost(payload){
-  const res = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload) });
-  return res.json();
-}
-async function getStatus(){ try{ const r = await apiGet({action:'status'}); return r.status || 'waiting'; }catch(e){ return 'waiting'; } }
-async function setStatus(s){ try{ await apiPost({action:'setStatus', status:s}); }catch(e){} }
-async function registerTeamRemote(name, players){ const r = await apiPost({action:'registerTeam', name, players}); return r.team; }
-async function getTeam(id){ try{ const r = await apiGet({action:'getTeam', id}); return r.team; }catch(e){ return null; } }
-async function saveTeam(team){ try{ await apiPost({action:'saveTeam', team}); }catch(e){ console.error(e); } }
-async function listTeams(){ try{ const r = await apiGet({action:'listTeams'}); return r.teams || []; }catch(e){ return []; } }
-async function deleteAllTeams(){ try{ await apiPost({action:'resetAll'}); }catch(e){} }
+async function getStatus(){ try{ const r = await apiCall({action:'status'}); return r.status || 'waiting'; }catch(e){ return 'waiting'; } }
+async function setStatus(s){ try{ await apiCall({action:'setStatus', status:s}); }catch(e){} }
+async function registerTeamRemote(name, players){ const r = await apiCall({action:'registerTeam', name, players}); return r.team; }
+async function getTeam(id){ try{ const r = await apiCall({action:'getTeam', id}); return r.team; }catch(e){ return null; } }
+async function saveTeam(team){ try{ await apiCall({action:'saveTeam', team: JSON.stringify(team)}); }catch(e){ console.error(e); } }
+async function listTeams(){ try{ const r = await apiCall({action:'listTeams'}); return r.teams || []; }catch(e){ return []; } }
+async function deleteAllTeams(){ try{ await apiCall({action:'resetAll'}); }catch(e){} }
 
 /* ============== APP STATE ============== */
 let S = { mode:'register', team:null, tab:'scan', status:'waiting', scanning:false, stream:null, rafId:null, openClue:null, boardTeams:[], boardTimer:null, tickTimer:null, adminTimer:null, pickedOption:null };
