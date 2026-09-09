@@ -233,7 +233,7 @@ function viewLobby(){
   <div class="topbar"><div class="team-name">${escapeHtml(S.team.name)}</div><div></div></div>
   <div class="screen">
     <h2>Připraveno, ${escapeHtml(S.team.name)}</h2>
-    <div class="lede">Až organizátor dá pokyn, stiskněte START. Časomíra se spustí a odemknou se QR kódy.</div>
+    <div class="lede">Až organizátor dá pokyn, stiskněte START. Časomíra se spustí a odemknou se kódy indicií.</div>
     <img class="intro-img" src="images/aktivace.jpg" alt="Záhada Domu radosti — zadání">
     <button class="btn" data-action="start">START</button>
   </div>`;
@@ -396,7 +396,7 @@ async function renderAdminContent(){
   });
   el.innerHTML = `
     <div class="admin-toggle">
-      <div><div style="font-weight:600;">${status==='live' ? 'Hra běží' : 'Hra čeká'}</div><div class="note" style="margin:0;">Zapnutím se odemknou všechny QR kódy pro skenování.</div></div>
+      <div><div style="font-weight:600;">${status==='live' ? 'Hra běží' : 'Hra čeká'}</div><div class="note" style="margin:0;">Zapnutím se odemknou všechny kódy indicií pro zadávání.</div></div>
       <div class="switch ${status==='live'?'on':''}" data-action="toggle-status"><div class="knob"></div></div>
     </div>
     <table class="admin-table">
