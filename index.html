@@ -415,7 +415,9 @@ async function toggleStatus(){
   S.adminStatus = newStatus;
   if(sw) sw.classList.toggle('on', newStatus==='live');
   if(label) label.textContent = newStatus==='live' ? 'Hra běží' : 'Hra čeká';
-  setStatus(newStatus); // na pozadí, nečekáme
+  clearInterval(S.adminTimer);
+  await setStatus(newStatus);
+  S.adminTimer = setInterval(renderAdminContent, 6000);
 }
 async function resetGame(){ if(!confirm('Smazat všechny týmy a jejich postup? Tuto akci nelze vrátit.')) return; await deleteAllTeams(); renderAdminContent(); }
 
