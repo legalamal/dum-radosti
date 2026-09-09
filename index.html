@@ -240,6 +240,14 @@ function viewLobby(){
 }
 
 async function doStart(){
+  const btn = document.querySelector('[data-action="start"]');
+  if(btn){ if(btn.disabled) return; btn.disabled = true; btn.textContent = 'Ověřuji…'; }
+  const status = await getStatus();
+  if(status !== 'live'){
+    toast('Hra ještě nezačala. Vyčkej na pokyn organizátora.');
+    if(btn){ btn.disabled = false; btn.textContent = 'START'; }
+    return;
+  }
   S.team.startTime = Date.now();
   await saveTeam(S.team);
   S.mode='game'; S.tab='scan';
@@ -286,7 +294,7 @@ function renderScanTab(){
   <h2 style="margin-bottom:6px;">Zadej kód indicie</h2>
   <div class="lede" style="margin-bottom:16px;">Kód najdeš napsaný na kartičce v areálu.</div>
   <div class="manual-entry" style="margin-top:0;">
-    <input type="text" id="manual-code" placeholder="např. 7H2FUZ" maxlength="6">
+    <input type="text" id="manual-code" placeholder="např. 32NMQR" maxlength="6">
     <button data-action="manual">Zadat</button>
   </div>
   <div class="note">Postup: <strong>${t.collected.length} / ${TOTAL_CLUES}</strong> indicií.</div>`;
