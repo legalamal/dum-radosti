@@ -146,8 +146,8 @@ const ICO = {
 
 /* ============== BACKEND (Google Sheets via Apps Script) ============== */
 async function apiCall(params){
-  const qs = new URLSearchParams(params).toString();
-  const res = await fetch(API_URL + '?' + qs);
+  const qs = new URLSearchParams({...params, _:Date.now()}).toString();
+  const res = await fetch(API_URL + '?' + qs, { cache: 'no-store' });
   return res.json();
 }
 async function getStatus(){ try{ const r = await apiCall({action:'status'}); return r.status || 'waiting'; }catch(e){ return 'waiting'; } }
