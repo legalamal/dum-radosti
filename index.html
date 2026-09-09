@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Dům radosti — Hýskov 1883</title>
+<style>
+  :root{
+    --bg:#181009; --panel:#241a12; --panel-2:#2c2016;
+    --parchment:#efe3c8; --parchment-2:#e6d8b8; --ink:#2b2016;
+    --brass:#b98d4a; --brass-dim:#7d6238; --wine:#7a2233; --wine-bright:#a3324a;
+    --muted:#a99878; --good:#5f7a4a; font-size:16px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; background:var(--bg); color:var(--parchment); font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; height:100%;}
+  #root{min-height:100vh; display:flex; flex-direction:column; max-width:520px; margin:0 auto; position:relative;}
+  h1,h2,h3{font-family:Georgia,"Iowan Old Style","Times New Roman",serif; font-weight:600; margin:0 0 .3em 0;}
+  .serif-italic{font-style:italic;}
+  button{font-family:inherit;}
+  img{display:block;}
+  ::selection{background:var(--brass); color:var(--ink);}
+
+  .topbar{position:sticky; top:0; z-index:20; background:linear-gradient(180deg,#1c130b,#181009 90%); border-bottom:1px solid var(--brass-dim); padding:calc(10px + env(safe-area-inset-top)) 16px 10px; display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .topbar .team-name{font-size:.95rem; color:var(--muted); letter-spacing:.02em;}
+  .topbar .timer{font-family:Georgia,serif; font-size:1.5rem; color:var(--brass); font-variant-numeric:tabular-nums;}
+  .topbar .timer.done{color:var(--good);}
+
+  .screen{flex:1; display:flex; flex-direction:column; padding:20px 18px 12px; overflow-y:auto;}
+  .center-screen{flex:1; display:flex; flex-direction:column; justify-content:center; padding:28px 22px; text-align:center;}
+  .hero-badge{width:64px;height:64px;margin:0 auto 18px; opacity:.9;}
+  .lede{color:var(--muted); font-size:.95rem; line-height:1.5; margin-bottom:22px;}
+  label{display:block; font-size:.82rem; color:var(--muted); margin:16px 0 6px;}
+  input[type=text]{width:100%; padding:13px 14px; border-radius:3px; border:1px solid var(--brass-dim); background:var(--panel); color:var(--parchment); font-size:1rem; outline:none;}
+  input[type=text]:focus{border-color:var(--brass);}
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:14px 20px; border-radius:3px; border:1px solid var(--brass); background:var(--brass); color:#1a1208; font-size:1rem; font-weight:600; cursor:pointer; width:100%; margin-top:20px; letter-spacing:.01em;}
+  .btn:active{transform:translateY(1px);}
+  .btn.secondary{background:transparent; color:var(--brass); border-color:var(--brass-dim);}
+  .btn.danger{background:var(--wine); border-color:var(--wine-bright); color:#f3e6e6;}
+  .btn[disabled]{opacity:.4; pointer-events:none;}
+  .divider{height:1px; background:var(--brass-dim); opacity:.5; margin:22px 0;}
+  .note{font-size:.78rem; color:var(--muted); margin-top:8px; line-height:1.4;}
+  .intro-img{width:100%; border-radius:6px; border:1px solid var(--brass-dim); margin-bottom:6px;}
+
+  .tabbar{position:sticky; bottom:0; z-index:20; display:flex; background:#150e08; border-top:1px solid var(--brass-dim); padding-bottom:env(safe-area-inset-bottom);}
+  .tab{flex:1; padding:10px 2px 12px; text-align:center; color:var(--muted); display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; border:none; background:none; font-size:.68rem; letter-spacing:.02em; position:relative;}
+  .tab svg{width:20px; height:20px; opacity:.7;}
+  .tab.active{color:var(--brass);}
+  .tab.active svg{opacity:1;}
+  .tab.locked{opacity:.35;}
+  .tab .dot{position:absolute; top:2px; right:22%; width:8px; height:8px; border-radius:50%; background:var(--wine-bright);}
+
+  .scan-wrap{position:relative; width:100%; aspect-ratio:3/4; background:#000; border-radius:6px; overflow:hidden; border:1px solid var(--brass-dim);}
+  .scan-wrap video{width:100%; height:100%; object-fit:cover;}
+  .scan-frame{position:absolute; inset:15%; border:2px solid var(--brass); border-radius:8px; box-shadow:0 0 0 2000px rgba(0,0,0,.35);}
+  .scan-msg{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:20px; color:var(--muted); font-size:.9rem;}
+  .manual-entry{margin-top:16px; display:flex; gap:8px;}
+  .manual-entry input{flex:1; text-align:center; letter-spacing:.15em; text-transform:uppercase;}
+  .manual-entry button{padding:0 18px; border-radius:3px; border:1px solid var(--brass-dim); background:var(--panel); color:var(--brass); font-weight:600;}
+
+  .clue-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:6px;}
+  .clue-slot{aspect-ratio:1; border-radius:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; border:1px solid var(--brass-dim); background:var(--panel); gap:6px; cursor:pointer; padding:6px;}
+  .clue-slot.locked{opacity:.4; cursor:default;}
+  .clue-slot .num{font-size:.7rem; color:var(--muted);}
+  .clue-slot svg{width:22px;height:22px;}
+  .progress-line{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .progress-line .count{font-family:Georgia,serif; font-size:1.3rem; color:var(--brass);}
+
+  .overlay{position:fixed; inset:0; background:rgba(10,6,3,.78); z-index:50; display:flex; align-items:center; justify-content:center; padding:16px;}
+  .card{background:var(--parchment); color:var(--ink); border-radius:6px; max-width:460px; width:100%; max-height:88vh; overflow-y:auto; padding:14px 14px 16px; position:relative; box-shadow:0 20px 60px rgba(0,0,0,.5);}
+  .card .tag{display:flex; align-items:center; gap:6px; font-size:.72rem; color:var(--wine); font-weight:700; margin-bottom:8px; padding:0 2px;}
+  .card .tag svg{width:14px;height:14px;}
+  .card img.clue-img{width:100%; border-radius:4px; display:block;}
+  .card-close{margin-top:14px; background:var(--ink); color:var(--parchment); border:none; padding:12px; border-radius:3px; width:100%; font-size:.95rem; cursor:pointer;}
+
+  .doc{background:var(--panel); border:1px solid var(--brass-dim); border-radius:6px; padding:16px 16px; margin-bottom:20px;}
+  .option{display:block; width:100%; text-align:left; padding:14px 16px; margin-bottom:8px; border-radius:4px; border:1px solid var(--brass-dim); background:var(--panel); color:var(--parchment); font-size:.95rem; cursor:pointer;}
+  .option.picked{border-color:var(--brass); background:var(--panel-2); color:var(--brass);}
+  .locked-msg{text-align:center; color:var(--muted); padding:40px 10px; font-size:.95rem;}
+  .locked-msg svg{width:36px;height:36px; margin-bottom:12px; opacity:.6;}
+
+  .lb-row{display:flex; align-items:center; gap:12px; padding:12px 4px; border-bottom:1px solid var(--panel-2);}
+  .lb-rank{width:26px; text-align:center; font-family:Georgia,serif; color:var(--brass); font-size:1.1rem;}
+  .lb-name{flex:1;}
+  .lb-name .t{font-weight:600;}
+  .lb-name .p{font-size:.78rem; color:var(--muted);}
+  .lb-stat{font-family:Georgia,serif; color:var(--parchment-2); font-variant-numeric:tabular-nums;}
+  .badge-done{background:var(--good); color:#0c1408; font-size:.68rem; padding:2px 7px; border-radius:10px; margin-left:6px;}
+
+  .admin-toggle{display:flex; align-items:center; justify-content:space-between; background:var(--panel); border:1px solid var(--brass-dim); border-radius:6px; padding:16px; margin-bottom:18px;}
+  .switch{width:52px; height:30px; border-radius:16px; background:var(--wine); position:relative; cursor:pointer; transition:.2s; flex-shrink:0;}
+  .switch.on{background:var(--good);}
+  .switch .knob{position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%; background:#fff; transition:.2s;}
+  .switch.on .knob{left:25px;}
+  table.admin-table{width:100%; border-collapse:collapse; font-size:.8rem;}
+  table.admin-table th{text-align:left; color:var(--muted); font-weight:500; padding:6px 4px; border-bottom:1px solid var(--brass-dim); font-size:.7rem;}
+  table.admin-table td{padding:8px 4px; border-bottom:1px solid var(--panel-2); vertical-align:top;}
+  .toast{position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:var(--panel); border:1px solid var(--brass); color:var(--parchment); padding:10px 18px; border-radius:20px; font-size:.85rem; z-index:60; opacity:0; transition:opacity .25s;}
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.js"></script>
+<script>
+/* ============== BACKEND CONFIG ==============
+   Vlož sem URL Web App nasazení z Google Apps Script (viz Code.gs). */
+const API_URL = "https://script.google.com/macros/s/AKfycbyHL3FrCVRbaWu-Ira8LmpoYvmVWEc99eApOr8DNFVvueQdznQqUKYPPL3bUusWyN6F/exec";
+
+/* ============== DATA: 14 indicií ============== */
+const CLUES = [
+  {id:'C01', cat:'v', num:'01', title:'Miroslav',  img:'images/miroslav.jpg'},
+  {id:'C02', cat:'v', num:'02', title:'Magdaléna',  img:'images/magdalena.jpg'},
+  {id:'C03', cat:'v', num:'03', title:'Gertruda',   img:'images/gertruda.jpg'},
+  {id:'C04', cat:'v', num:'04', title:'Přemysl',    img:'images/premysl.jpg'},
+  {id:'C05', cat:'v', num:'05', title:'Soběslav',   img:'images/sobeslav.jpg'},
+  {id:'C06', cat:'d', num:'06', title:'Pracovní deník nevěstince', img:'images/pracovni-denik.jpg'},
+  {id:'C07', cat:'d', num:'07', title:'Výdaje domu', img:'images/vydaje-domu.jpg'},
+  {id:'C08', cat:'d', num:'08', title:'Lístek se vzkazem', img:'images/listek-vzkaz.jpg'},
+  {id:'C09', cat:'d', num:'09', title:'Omluvenka ze školy', img:'images/omluvenka.jpg'},
+  {id:'C10', cat:'d', num:'10', title:'Kalendář',   img:'images/kalendar.jpg'},
+  {id:'C11', cat:'d', num:'11', title:'Výslech Josefíny', img:'images/josefina.jpg'},
+  {id:'C12', cat:'d', num:'12', title:'Vražedná dýka', img:'images/dyka.jpg'},
+  {id:'C13', cat:'d', num:'13', title:'Platba za vraždu', img:'images/platba.jpg'},
+  {id:'C14', cat:'d', num:'14', title:'Úřední příkaz', img:'images/uredni-prikaz.jpg'},
+];
+const TOTAL_CLUES = CLUES.length;
+
+const SUSPECT_OPTIONS = ['Miroslav','Magdaléna','Gertruda','Přemysl','Soběslav','Miroslav a Magdaléna','Gertruda a Přemysl','Gertruda a Soběslav'];
+const CORRECT_ANSWER = 'Gertruda a Soběslav';
+
+/* ============== ICONS ============== */
+const ICO = {
+  quill:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 4c-4 0-9 3-12 8-1.5 2.5-2.5 5-3 7 2-.5 4.5-1.5 7-3 5-3 8-8 8-12z"/><path d="M9 15L4 20"/></svg>`,
+  magnifier:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/></svg>`,
+  lock:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>`,
+  check:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12l5 5L20 6"/></svg>`,
+  scroll:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 4h11a2 2 0 012 2v13a1 1 0 01-1.5.87L15 18l-2.5 2-2.5-2-2.5 2-1.5-1.13V6a2 2 0 00-2-2z"/><path d="M6 4a2 2 0 100 4"/></svg>`,
+  camera:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13.5" r="3.2"/></svg>`,
+  grid:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/></svg>`,
+  skull:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a7 7 0 00-7 7c0 2.5 1.2 4 2 5v3h3v-2h4v2h3v-3c.8-1 2-2.5 2-5a7 7 0 00-7-7z"/><circle cx="9.5" cy="10" r="1"/><circle cx="14.5" cy="10" r="1"/></svg>`,
+  trophy:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 4h8v5a4 4 0 01-8 0V4z"/><path d="M8 5H5v2a3 3 0 003 3M16 5h3v2a3 3 0 01-3 3"/><path d="M10 15h4v3h-4z"/><path d="M8 20h8"/></svg>`,
+  seal:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>`
+};
+
+/* ============== BACKEND (Google Sheets via Apps Script) ============== */
+async function apiGet(params){
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(API_URL + '?' + qs);
+  return res.json();
+}
+async function apiPost(payload){
+  const res = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload) });
+  return res.json();
+}
+async function getStatus(){ try{ const r = await apiGet({action:'status'}); return r.status || 'waiting'; }catch(e){ return 'waiting'; } }
+async function setStatus(s){ try{ await apiPost({action:'setStatus', status:s}); }catch(e){} }
+async function registerTeamRemote(name, players){ const r = await apiPost({action:'registerTeam', name, players}); return r.team; }
+async function getTeam(id){ try{ const r = await apiGet({action:'getTeam', id}); return r.team; }catch(e){ return null; } }
+async function saveTeam(team){ try{ await apiPost({action:'saveTeam', team}); }catch(e){ console.error(e); } }
+async function listTeams(){ try{ const r = await apiGet({action:'listTeams'}); return r.teams || []; }catch(e){ return []; } }
+async function deleteAllTeams(){ try{ await apiPost({action:'resetAll'}); }catch(e){} }
+
+/* ============== APP STATE ============== */
+let S = { mode:'register', team:null, tab:'scan', status:'waiting', scanning:false, stream:null, rafId:null, openClue:null, boardTeams:[], boardTimer:null, tickTimer:null, adminTimer:null, pickedOption:null };
+
+function fmtTime(ms){
+  if(ms==null || ms<0) ms=0;
+  const s = Math.floor(ms/1000), hh=Math.floor(s/3600), mm=Math.floor((s%3600)/60), ss=s%60;
+  const p = n => String(n).padStart(2,'0');
+  return hh>0 ? `${p(hh)}:${p(mm)}:${p(ss)}` : `${p(mm)}:${p(ss)}`;
+}
+function toast(msg){
+  const el = document.createElement('div'); el.className='toast'; el.textContent = msg;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>el.classList.add('show'));
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),300); }, 2200);
+}
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ============== ROUTING ============== */
+async function boot(){
+  const hash = location.hash || '';
+  if(hash === '#organizator'){ S.mode='admin'; render(); return; }
+  const m = hash.match(/#team=([A-Z0-9]+)/i);
+  if(m){
+    const t = await getTeam(m[1].toUpperCase());
+    if(t){ S.team=t; S.mode = t.startTime ? 'game' : 'lobby'; render(); return; }
+  }
+  S.mode='register'; render();
+}
+
+function render(){
+  const root = document.getElementById('root');
+  if(S.mode==='register') root.innerHTML = viewRegister();
+  else if(S.mode==='lobby') root.innerHTML = viewLobby();
+  else if(S.mode==='game') root.innerHTML = viewGame();
+  else if(S.mode==='admin') root.innerHTML = viewAdmin();
+  attachHandlers();
+}
+
+/* ============== REGISTER ============== */
+function viewRegister(){
+  return `
+  <div class="center-screen">
+    <div class="hero-badge" style="color:var(--brass)">${ICO.seal}</div>
+    <h1 class="serif-italic" style="font-size:1.6rem;">Dům radosti</h1>
+    <div class="lede">Hýskov, 1883 — vyšetřování vraždy</div>
+    <label>Název týmu</label>
+    <input type="text" id="in-team" placeholder="např. Detektivové z patra 3" maxlength="40">
+    <label>Jména hráčů</label>
+    <input type="text" id="in-players" placeholder="např. Petr &amp; Jana" maxlength="60">
+    <button class="btn" data-action="register">Vytvořit tým</button>
+    <div class="note">Po vytvoření týmu budete přesměrováni na čekárnu, kde se aktivuje časomíra tlačítkem START.</div>
+  </div>`;
+}
+
+async function doRegister(){
+  const name = document.getElementById('in-team').value.trim();
+  const players = document.getElementById('in-players').value.trim();
+  if(!name){ toast('Zadejte název týmu'); return; }
+  const btn = document.querySelector('[data-action="register"]');
+  if(btn) btn.textContent = 'Vytvářím…';
+  try{
+    const t = await registerTeamRemote(name, players);
+    history.replaceState(null,'','#team='+t.id);
+    S.team = t; S.mode='lobby';
+    render();
+  }catch(e){ toast('Nepodařilo se spojit s databází. Zkontroluj API_URL.'); }
+}
+
+/* ============== LOBBY ============== */
+function viewLobby(){
+  return `
+  <div class="topbar"><div class="team-name">${escapeHtml(S.team.name)}</div><div></div></div>
+  <div class="screen">
+    <h2>Připraveno, ${escapeHtml(S.team.name)}</h2>
+    <div class="lede">Až organizátor dá pokyn, stiskněte START. Časomíra se spustí a odemknou se QR kódy.</div>
+    <img class="intro-img" src="images/aktivace.jpg" alt="Záhada Domu radosti — zadání">
+    <button class="btn" data-action="start">START</button>
+  </div>`;
+}
+
+async function doStart(){
+  S.team.startTime = Date.now();
+  await saveTeam(S.team);
+  S.mode='game'; S.tab='scan';
+  render();
+}
+
+/* ============== GAME SHELL ============== */
+function viewGame(){
+  const t = S.team, finished = !!t.answer;
+  const elapsed = finished ? (t.answerAt - t.startTime) : (Date.now() - t.startTime);
+  const tabs = [
+    {id:'zadani', label:'Zadání', icon:ICO.scroll},
+    {id:'scan', label:'Skenovat', icon:ICO.camera},
+    {id:'clues', label:'Indicie', icon:ICO.grid, dot: t.collected.length<TOTAL_CLUES},
+    {id:'verdict', label:'Vrah?', icon:ICO.skull, locked: t.collected.length<TOTAL_CLUES},
+    {id:'board', label:'Žebříček', icon:ICO.trophy},
+  ];
+  return `
+  <div class="topbar">
+    <div class="team-name">${escapeHtml(t.name)}</div>
+    <div class="timer ${finished?'done':''}" id="timer-el">${fmtTime(elapsed)}</div>
+  </div>
+  <div class="screen" id="tab-content">${renderTabContent()}</div>
+  <div class="tabbar">
+    ${tabs.map(tb=>`<button class="tab ${S.tab===tb.id?'active':''} ${tb.locked?'locked':''}" data-action="tab" data-tab="${tb.id}">${tb.icon}<span>${tb.label}</span>${tb.dot?'<span class="dot"></span>':''}</button>`).join('')}
+  </div>
+  ${S.openClue ? renderClueModal(S.openClue) : ''}`;
+}
+
+function renderTabContent(){
+  if(S.tab==='zadani') return `<img class="intro-img" src="images/aktivace.jpg" alt="Zadání">`;
+  if(S.tab==='scan') return renderScanTab();
+  if(S.tab==='clues') return renderCluesTab();
+  if(S.tab==='verdict') return renderVerdictTab();
+  if(S.tab==='board') return renderBoardTab();
+  return '';
+}
+
+/* ---- SCAN ---- */
+function renderScanTab(){
+  const t = S.team;
+  if(t.answer) return `<div class="locked-msg">${ICO.check}<div>Vaše odpověď byla odeslána.<br>Skenování je uzavřeno.</div></div>`;
+  return `
+  <h2 style="margin-bottom:10px;">Naskenuj QR kód</h2>
+  <div class="scan-wrap" id="scan-wrap">
+    <video id="scan-video" autoplay muted playsinline></video>
+    <div class="scan-frame"></div>
+    <div class="scan-msg" id="scan-msg" style="display:none;"></div>
+  </div>
+  <div class="manual-entry">
+    <input type="text" id="manual-code" placeholder="nebo zadej kód ručně, např. C07">
+    <button data-action="manual">Zadat</button>
+  </div>
+  <div class="note">Postup: <strong>${t.collected.length} / ${TOTAL_CLUES}</strong> indicií.</div>`;
+}
+
+async function startScanner(){
+  const wrap = document.getElementById('scan-wrap'), video = document.getElementById('scan-video'), msg = document.getElementById('scan-msg');
+  if(!wrap || !video) return;
+  const status = await getStatus(); S.status = status;
+  if(status !== 'live'){ msg.style.display='flex'; msg.textContent='Hra ještě nezačala. Vyčkejte na pokyn organizátora.'; return; }
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
+    S.stream = stream; video.srcObject = stream; await video.play();
+    S.scanning = true; scanLoop();
+  }catch(e){ msg.style.display='flex'; msg.textContent='Kamera není dostupná. Použij prosím ruční zadání kódu níže.'; }
+}
+function stopScanner(){
+  S.scanning = false;
+  if(S.rafId) cancelAnimationFrame(S.rafId);
+  if(S.stream){ S.stream.getTracks().forEach(tr=>tr.stop()); S.stream=null; }
+}
+let scanCanvas = document.createElement('canvas');
+function scanLoop(){
+  if(!S.scanning) return;
+  const video = document.getElementById('scan-video');
+  if(video && video.readyState === video.HAVE_ENOUGH_DATA && window.jsQR){
+    scanCanvas.width = video.videoWidth; scanCanvas.height = video.videoHeight;
+    const ctx = scanCanvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, scanCanvas.width, scanCanvas.height);
+    const imgData = ctx.getImageData(0,0,scanCanvas.width, scanCanvas.height);
+    const result = window.jsQR(imgData.data, imgData.width, imgData.height);
+    if(result && result.data){ handleCode(result.data); return; }
+  }
+  S.rafId = requestAnimationFrame(scanLoop);
+}
+async function handleCode(raw){
+  const code = String(raw).trim().toUpperCase();
+  const status = await getStatus();
+  if(status !== 'live'){ toast('Hra ještě nezačala.'); resumeScan(); return; }
+  const clue = CLUES.find(c=>c.id===code);
+  if(!clue){ toast('Neplatný kód'); resumeScan(); return; }
+  stopScanner();
+  if(!S.team.collected.includes(clue.id)){ S.team.collected.push(clue.id); await saveTeam(S.team); }
+  S.openClue = clue.id; render();
+}
+function resumeScan(){ setTimeout(()=>{ if(S.tab==='scan') scanLoop(); }, 900); }
+async function doManual(){ const val = document.getElementById('manual-code').value; if(val.trim()) await handleCode(val); }
+
+/* ---- CLUES ---- */
+function renderCluesTab(){
+  const t = S.team;
+  return `
+  <div class="progress-line"><h2 style="margin:0;">Indicie</h2><div class="count">${t.collected.length} / ${TOTAL_CLUES}</div></div>
+  <div class="clue-grid">
+    ${CLUES.map(c=>{
+      const got = t.collected.includes(c.id);
+      return `<div class="clue-slot ${got?'':'locked'}" data-action="${got?'open-clue':''}" data-clue="${c.id}">${got ? (c.cat==='v'?ICO.quill:ICO.magnifier) : ICO.lock}<div class="num">${c.num}</div></div>`;
+    }).join('')}
+  </div>`;
+}
+function renderClueModal(id){
+  const c = CLUES.find(x=>x.id===id); if(!c) return '';
+  return `
+  <div class="overlay" data-action="close-clue">
+    <div class="card" onclick="event.stopPropagation()">
+      <div class="tag">${c.cat==='v'?ICO.quill:ICO.magnifier} ${c.cat==='v'?'Výpověď':'Důkaz'} · č. ${c.num} — ${escapeHtml(c.title)}</div>
+      <img class="clue-img" src="${c.img}" alt="${escapeHtml(c.title)}">
+      <button class="card-close" data-action="close-clue">Zavřít</button>
+    </div>
+  </div>`;
+}
+
+/* ---- VERDICT ---- */
+function renderVerdictTab(){
+  const t = S.team;
+  if(t.collected.length < TOTAL_CLUES){
+    const missing = TOTAL_CLUES - t.collected.length;
+    return `<div class="locked-msg">${ICO.lock}<div>Ještě chybí <strong>${missing}</strong> ${missing===1?'indicie':'indicií'}.<br>Nasbírej všech ${TOTAL_CLUES}, aby ses mohl/a pokusit usvědčit vraha.</div></div>`;
+  }
+  if(t.answer){
+    return `<h2>Odpověď odeslána</h2><div class="doc"><p>Tým <strong>${escapeHtml(t.name)}</strong> obvinil:</p><p style="color:var(--brass); font-size:1.1rem;">${escapeHtml(t.answer)}</p></div><div class="note">Finální čas: ${fmtTime(t.answerAt - t.startTime)}. Výsledek vyhlásí organizátor.</div>`;
+  }
+  return `
+  <h2>Kdo je vrah?</h2>
+  <div class="lede">Máš všechny indicie. Vyber jednu možnost — odpověď nelze poté změnit.</div>
+  <div id="options">${SUSPECT_OPTIONS.map(o=>`<button class="option ${S.pickedOption===o?'picked':''}" data-action="pick" data-opt="${escapeHtml(o)}">${escapeHtml(o)}</button>`).join('')}</div>
+  <button class="btn" data-action="submit-verdict" ${S.pickedOption?'':'disabled'}>Odeslat obvinění</button>`;
+}
+async function submitVerdict(){
+  if(!S.pickedOption) return;
+  if(!confirm('Opravdu obvinit „'+S.pickedOption+'“? Odpověď už nelze změnit.')) return;
+  S.team.answer = S.pickedOption; S.team.answerAt = Date.now();
+  await saveTeam(S.team); render();
+}
+
+/* ---- BOARD ---- */
+function renderBoardTab(){
+  const teams = S.boardTeams || [];
+  if(teams.length===0) return `<h2>Žebříček</h2><div class="note">Zatím žádné týmy.</div>`;
+  const sorted = teams.slice().sort((a,b)=>{
+    const aDone=!!a.answer, bDone=!!b.answer;
+    if(aDone&&bDone) return (a.answerAt-a.startTime)-(b.answerAt-b.startTime);
+    if(aDone) return -1; if(bDone) return 1;
+    return (b.collected.length-a.collected.length) || (a.startTime-b.startTime);
+  });
+  return `<h2>Žebříček</h2>${sorted.map((tm,i)=>{
+    const done=!!tm.answer, stat = done ? fmtTime(tm.answerAt-tm.startTime) : `${tm.collected.length}/${TOTAL_CLUES}`;
+    return `<div class="lb-row"><div class="lb-rank">${i+1}.</div><div class="lb-name"><div class="t">${escapeHtml(tm.name)} ${done?'<span class="badge-done">Hotovo</span>':''}</div><div class="p">${escapeHtml(tm.players||'')}</div></div><div class="lb-stat">${stat}</div></div>`;
+  }).join('')}`;
+}
+async function refreshBoard(){ S.boardTeams = await listTeams(); if(S.mode==='game' && S.tab==='board') render(); }
+
+/* ============== ADMIN ============== */
+function viewAdmin(){ return `<div class="topbar"><div class="team-name">Organizátorský panel</div><div></div></div><div class="screen" id="admin-content">Načítám…</div>`; }
+async function renderAdminContent(){
+  const el = document.getElementById('admin-content'); if(!el) return;
+  const status = await getStatus(); const teams = await listTeams();
+  const sorted = teams.slice().sort((a,b)=>{
+    const aDone=!!a.answer, bDone=!!b.answer;
+    if(aDone&&bDone) return (a.answerAt-a.startTime)-(b.answerAt-b.startTime);
+    if(aDone) return -1; if(bDone) return 1;
+    return (b.collected.length-a.collected.length);
+  });
+  el.innerHTML = `
+    <div class="admin-toggle">
+      <div><div style="font-weight:600;">${status==='live' ? 'Hra běží' : 'Hra čeká'}</div><div class="note" style="margin:0;">Zapnutím se odemknou všechny QR kódy pro skenování.</div></div>
+      <div class="switch ${status==='live'?'on':''}" data-action="toggle-status"><div class="knob"></div></div>
+    </div>
+    <table class="admin-table">
+      <tr><th>Tým</th><th>Hráči</th><th>Postup</th><th>Čas</th><th>Obvinění</th></tr>
+      ${sorted.map(t=>{
+        const elapsed = t.answer ? (t.answerAt-t.startTime) : (t.startTime ? Date.now()-t.startTime : null);
+        const verdict = t.answer ? `${escapeHtml(t.answer)} ${t.answer===CORRECT_ANSWER?'✅':'❌'}` : '–';
+        return `<tr><td>${escapeHtml(t.name)}</td><td>${escapeHtml(t.players||'')}</td><td>${t.collected.length}/${TOTAL_CLUES}</td><td>${elapsed!=null?fmtTime(elapsed):'–'}</td><td>${verdict}</td></tr>`;
+      }).join('') || `<tr><td colspan="5" class="note">Zatím se nezaregistroval žádný tým.</td></tr>`}
+    </table>
+    <div class="divider"></div>
+    <button class="btn danger" data-action="reset-game">Vynulovat všechna data (test)</button>
+    <div class="note">Správná odpověď je „${CORRECT_ANSWER}“. Panel se obnovuje automaticky.</div>`;
+}
+async function toggleStatus(){ const cur = await getStatus(); await setStatus(cur==='live' ? 'waiting' : 'live'); renderAdminContent(); }
+async function resetGame(){ if(!confirm('Smazat všechny týmy a jejich postup? Tuto akci nelze vrátit.')) return; await deleteAllTeams(); renderAdminContent(); }
+
+/* ============== HANDLERS ============== */
+function attachHandlers(){
+  const root = document.getElementById('root');
+  root.onclick = async (e) => {
+    const btn = e.target.closest('[data-action]'); if(!btn) return;
+    const action = btn.dataset.action;
+    if(action==='register') return doRegister();
+    if(action==='start') return doStart();
+    if(action==='tab'){ if(btn.classList.contains('locked')) return; switchTab(btn.dataset.tab); return; }
+    if(action==='open-clue'){ S.openClue = btn.dataset.clue; render(); return; }
+    if(action==='close-clue'){ S.openClue = null; render(); if(S.tab==='scan') startScanner(); return; }
+    if(action==='manual') return doManual();
+    if(action==='pick'){ S.pickedOption = btn.dataset.opt; render(); return; }
+    if(action==='submit-verdict') return submitVerdict();
+    if(action==='toggle-status') return toggleStatus();
+    if(action==='reset-game') return resetGame();
+  };
+  if(S.mode==='game'){
+    clearInterval(S.tickTimer);
+    S.tickTimer = setInterval(()=>{ const el = document.getElementById('timer-el'); if(el && S.team && S.team.startTime && !S.team.answer) el.textContent = fmtTime(Date.now()-S.team.startTime); },1000);
+    if(S.tab==='scan' && !S.team.answer) startScanner(); else stopScanner();
+    if(S.tab==='board'){ refreshBoard(); clearInterval(S.boardTimer); S.boardTimer = setInterval(refreshBoard, 8000); }
+    else clearInterval(S.boardTimer);
+  }
+  if(S.mode==='admin'){ renderAdminContent(); clearInterval(S.adminTimer); S.adminTimer = setInterval(renderAdminContent, 6000); }
+}
+function switchTab(tab){ stopScanner(); clearInterval(S.boardTimer); S.tab = tab; S.pickedOption = S.team && S.team.answer ? S.team.answer : null; render(); }
+
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>QR kartičky – tisk</title>
+<style>
+  body{ font-family:Georgia,serif; background:#fff; margin:0; padding:20px; color:#20140c;}
+  .sheet{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; max-width:900px; margin:0 auto;}
+  .card{ border:2px solid #7d6238; border-radius:6px; padding:14px 10px 10px; display:flex; flex-direction:column; align-items:center; justify-content:center; aspect-ratio:1; break-inside:avoid; position:relative;}
+  .card .num{ position:absolute; top:6px; right:9px; font-size:.8rem; color:#7d6238;}
+  .card .qr{ width:78%; }
+  .card .foot{ margin-top:8px; font-size:.65rem; letter-spacing:.15em; color:#7d6238;}
+  h1{ text-align:center; font-size:1.1rem; margin-bottom:18px;}
+  @media print{ h1{display:none;} .card{border-color:#000;} }
+</style>
+</head>
+<body>
+<h1>Dům radosti — 14 kartiček důkazů (pro organizátora)</h1>
+<div class="sheet" id="sheet"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  const ids = Array.from({length:14}, (_,i)=> 'C' + String(i+1).padStart(2,'0'));
+  const sheet = document.getElementById('sheet');
+  ids.forEach(id=>{
+    const card = document.createElement('div');
+    card.className='card';
+    card.innerHTML = `<div class="num">${id.replace('C','')}</div><div class="qr" id="qr-${id}"></div><div class="foot">${id}</div>`;
+    sheet.appendChild(card);
+  });
+  window.onload = () => {
+    ids.forEach(id=>{ new QRCode(document.getElementById('qr-'+id), { text:id, width:180, height:180, colorDark:'#000000', colorLight:'#ffffff' }); });
+  };
+</script>
+</body>
+</html>
