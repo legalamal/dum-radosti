@@ -213,17 +213,21 @@ function viewRegister(){
 }
 
 async function doRegister(){
+  const btn = document.querySelector('[data-action="register"]');
+  if(btn && btn.disabled) return;
   const name = document.getElementById('in-team').value.trim();
   const players = document.getElementById('in-players').value.trim();
   if(!name){ toast('Zadejte název týmu'); return; }
-  const btn = document.querySelector('[data-action="register"]');
-  if(btn) btn.textContent = 'Vytvářím…';
+  if(btn){ btn.disabled = true; btn.textContent = 'Vytvářím…'; }
   try{
     const t = await registerTeamRemote(name, players);
     history.replaceState(null,'','#team='+t.id);
     S.team = t; S.mode='lobby';
     render();
-  }catch(e){ toast('Nepodařilo se spojit s databází. Zkontroluj API_URL.'); }
+  }catch(e){
+    toast('Nepodařilo se spojit s databází. Zkontroluj API_URL.');
+    if(btn){ btn.disabled = false; btn.textContent = 'Vytvořit tým'; }
+  }
 }
 
 /* ============== LOBBY ============== */
