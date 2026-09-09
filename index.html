@@ -103,7 +103,6 @@
 <body>
 <div id="root"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.js"></script>
 <script>
 /* ============== BACKEND CONFIG ==============
    Vlož sem URL Web App nasazení z Google Apps Script (viz Code.gs). */
@@ -111,22 +110,23 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyHL3FrCVRbaWu-Ira8Lmpo
 
 /* ============== DATA: 14 indicií ============== */
 const CLUES = [
-  {id:'C01', cat:'v', num:'01', title:'Miroslav',  img:'images/miroslav.jpg'},
-  {id:'C02', cat:'v', num:'02', title:'Magdaléna',  img:'images/magdalena.jpg'},
-  {id:'C03', cat:'v', num:'03', title:'Gertruda',   img:'images/gertruda.jpg'},
-  {id:'C04', cat:'v', num:'04', title:'Přemysl',    img:'images/premysl.jpg'},
-  {id:'C05', cat:'v', num:'05', title:'Soběslav',   img:'images/sobeslav.jpg'},
-  {id:'C06', cat:'d', num:'06', title:'Pracovní deník nevěstince', img:'images/pracovni-denik.jpg'},
-  {id:'C07', cat:'d', num:'07', title:'Výdaje domu', img:'images/vydaje-domu.jpg'},
-  {id:'C08', cat:'d', num:'08', title:'Lístek se vzkazem', img:'images/listek-vzkaz.jpg'},
-  {id:'C09', cat:'d', num:'09', title:'Omluvenka ze školy', img:'images/omluvenka.jpg'},
-  {id:'C10', cat:'d', num:'10', title:'Kalendář',   img:'images/kalendar.jpg'},
-  {id:'C11', cat:'d', num:'11', title:'Výslech Josefíny', img:'images/josefina.jpg'},
-  {id:'C12', cat:'d', num:'12', title:'Vražedná dýka', img:'images/dyka.jpg'},
-  {id:'C13', cat:'d', num:'13', title:'Platba za vraždu', img:'images/platba.jpg'},
-  {id:'C14', cat:'d', num:'14', title:'Úřední příkaz', img:'images/uredni-prikaz.jpg'},
+  {id:'7H2FUZ', cat:'v', num:'01', title:'Miroslav',  img:'images/miroslav.jpg'},
+  {id:'GF5CBF', cat:'v', num:'02', title:'Magdaléna',  img:'images/magdalena.jpg'},
+  {id:'PQBN4Q', cat:'v', num:'03', title:'Gertruda',   img:'images/gertruda.jpg'},
+  {id:'2GYYSC', cat:'v', num:'04', title:'Přemysl',    img:'images/premysl.jpg'},
+  {id:'NECQUF', cat:'v', num:'05', title:'Soběslav',   img:'images/sobeslav.jpg'},
+  {id:'3TEPWP', cat:'d', num:'06', title:'Pracovní deník nevěstince', img:'images/pracovni-denik.jpg'},
+  {id:'LZYPTE', cat:'d', num:'07', title:'Výdaje domu', img:'images/vydaje-domu.jpg'},
+  {id:'LRL72T', cat:'d', num:'08', title:'Lístek se vzkazem', img:'images/listek-vzkaz.jpg'},
+  {id:'HBTRQJ', cat:'d', num:'09', title:'Omluvenka ze školy', img:'images/omluvenka.jpg'},
+  {id:'QG2T7Z', cat:'d', num:'10', title:'Kalendář',   img:'images/kalendar.jpg'},
+  {id:'QWDQCW', cat:'d', num:'11', title:'Výslech Josefíny', img:'images/josefina.jpg'},
+  {id:'937KSJ', cat:'d', num:'12', title:'Vražedná dýka', img:'images/dyka.jpg'},
+  {id:'6TAL5X', cat:'d', num:'13', title:'Platba za vraždu', img:'images/platba.jpg'},
+  {id:'TKPXGF', cat:'d', num:'14', title:'Úřední příkaz', img:'images/uredni-prikaz.jpg'},
 ];
 const TOTAL_CLUES = CLUES.length;
+const GIVE_UP = 'Vzdali jsme se';
 
 const SUSPECT_OPTIONS = ['Miroslav','Magdaléna','Gertruda','Přemysl','Soběslav','Miroslav a Magdaléna','Gertruda a Přemysl','Gertruda a Soběslav'];
 const CORRECT_ANSWER = 'Gertruda a Soběslav';
@@ -278,66 +278,34 @@ function renderTabContent(){
   return '';
 }
 
-/* ---- SCAN ---- */
+/* ---- ZADEJ KÓD ---- */
 function renderScanTab(){
   const t = S.team;
-  if(t.answer) return `<div class="locked-msg">${ICO.check}<div>Vaše odpověď byla odeslána.<br>Skenování je uzavřeno.</div></div>`;
+  if(t.answer) return `<div class="locked-msg">${ICO.check}<div>${t.answer===GIVE_UP ? 'Hru jste vzdali.' : 'Vaše odpověď byla odeslána.'}<br>Zadávání kódů je uzavřeno.</div></div>`;
   return `
-  <h2 style="margin-bottom:10px;">Naskenuj QR kód</h2>
-  <div class="scan-wrap" id="scan-wrap">
-    <video id="scan-video" autoplay muted playsinline></video>
-    <div class="scan-frame"></div>
-    <div class="scan-msg" id="scan-msg" style="display:none;"></div>
-  </div>
-  <div class="manual-entry">
-    <input type="text" id="manual-code" placeholder="nebo zadej kód ručně, např. C07">
+  <h2 style="margin-bottom:6px;">Zadej kód indicie</h2>
+  <div class="lede" style="margin-bottom:16px;">Kód najdeš napsaný na kartičce v areálu.</div>
+  <div class="manual-entry" style="margin-top:0;">
+    <input type="text" id="manual-code" placeholder="např. 7H2FUZ" maxlength="6">
     <button data-action="manual">Zadat</button>
   </div>
   <div class="note">Postup: <strong>${t.collected.length} / ${TOTAL_CLUES}</strong> indicií.</div>`;
 }
-
-async function startScanner(){
-  const wrap = document.getElementById('scan-wrap'), video = document.getElementById('scan-video'), msg = document.getElementById('scan-msg');
-  if(!wrap || !video) return;
-  const status = await getStatus(); S.status = status;
-  if(status !== 'live'){ msg.style.display='flex'; msg.textContent='Hra ještě nezačala. Vyčkejte na pokyn organizátora.'; return; }
-  try{
-    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'environment' } });
-    S.stream = stream; video.srcObject = stream; await video.play();
-    S.scanning = true; scanLoop();
-  }catch(e){ msg.style.display='flex'; msg.textContent='Kamera není dostupná. Použij prosím ruční zadání kódu níže.'; }
-}
-function stopScanner(){
-  S.scanning = false;
-  if(S.rafId) cancelAnimationFrame(S.rafId);
-  if(S.stream){ S.stream.getTracks().forEach(tr=>tr.stop()); S.stream=null; }
-}
-let scanCanvas = document.createElement('canvas');
-function scanLoop(){
-  if(!S.scanning) return;
-  const video = document.getElementById('scan-video');
-  if(video && video.readyState === video.HAVE_ENOUGH_DATA && window.jsQR){
-    scanCanvas.width = video.videoWidth; scanCanvas.height = video.videoHeight;
-    const ctx = scanCanvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, scanCanvas.width, scanCanvas.height);
-    const imgData = ctx.getImageData(0,0,scanCanvas.width, scanCanvas.height);
-    const result = window.jsQR(imgData.data, imgData.width, imgData.height);
-    if(result && result.data){ handleCode(result.data); return; }
-  }
-  S.rafId = requestAnimationFrame(scanLoop);
-}
 async function handleCode(raw){
   const code = String(raw).trim().toUpperCase();
+  if(!code) return;
   const status = await getStatus();
-  if(status !== 'live'){ toast('Hra ještě nezačala.'); resumeScan(); return; }
+  if(status !== 'live'){ toast('Hra ještě nezačala.'); return; }
   const clue = CLUES.find(c=>c.id===code);
-  if(!clue){ toast('Neplatný kód'); resumeScan(); return; }
-  stopScanner();
-  if(!S.team.collected.includes(clue.id)){ S.team.collected.push(clue.id); await saveTeam(S.team); }
+  if(!clue){ toast('Neplatný kód'); return; }
+  const already = S.team.collected.includes(clue.id);
+  if(!already){ S.team.collected.push(clue.id); await saveTeam(S.team); }
   S.openClue = clue.id; render();
+  if(!already && S.team.collected.length === TOTAL_CLUES){
+    setTimeout(()=>toast('Máte všechny indicie! Přejděte na záložku „Vrah?“'), 500);
+  }
 }
-function resumeScan(){ setTimeout(()=>{ if(S.tab==='scan') scanLoop(); }, 900); }
-async function doManual(){ const val = document.getElementById('manual-code').value; if(val.trim()) await handleCode(val); }
+async function doManual(){ const val = document.getElementById('manual-code').value; await handleCode(val); const inp=document.getElementById('manual-code'); if(inp) inp.value=''; }
 
 /* ---- CLUES ---- */
 function renderCluesTab(){
@@ -366,23 +334,33 @@ function renderClueModal(id){
 /* ---- VERDICT ---- */
 function renderVerdictTab(){
   const t = S.team;
+  if(t.answer){
+    if(t.answer===GIVE_UP){
+      return `<h2>Vzdali jste hru</h2><div class="doc"><p>Tým <strong>${escapeHtml(t.name)}</strong> hru vzdal s ${t.collected.length}/${TOTAL_CLUES} indiciemi.</p></div><div class="note">Finální čas: ${fmtTime(t.answerAt - t.startTime)}.</div>`;
+    }
+    return `<h2>Odpověď odeslána</h2><div class="doc"><p>Tým <strong>${escapeHtml(t.name)}</strong> obvinil:</p><p style="color:var(--brass); font-size:1.1rem;">${escapeHtml(t.answer)}</p></div><div class="note">Finální čas: ${fmtTime(t.answerAt - t.startTime)}. Výsledek vyhlásí organizátor.</div>`;
+  }
   if(t.collected.length < TOTAL_CLUES){
     const missing = TOTAL_CLUES - t.collected.length;
-    return `<div class="locked-msg">${ICO.lock}<div>Ještě chybí <strong>${missing}</strong> ${missing===1?'indicie':'indicií'}.<br>Nasbírej všech ${TOTAL_CLUES}, aby ses mohl/a pokusit usvědčit vraha.</div></div>`;
-  }
-  if(t.answer){
-    return `<h2>Odpověď odeslána</h2><div class="doc"><p>Tým <strong>${escapeHtml(t.name)}</strong> obvinil:</p><p style="color:var(--brass); font-size:1.1rem;">${escapeHtml(t.answer)}</p></div><div class="note">Finální čas: ${fmtTime(t.answerAt - t.startTime)}. Výsledek vyhlásí organizátor.</div>`;
+    return `<div class="locked-msg">${ICO.lock}<div>Ještě chybí <strong>${missing}</strong> ${missing===1?'indicie':'indicií'}.<br>Nasbírej všech ${TOTAL_CLUES}, aby ses mohl/a pokusit usvědčit vraha.</div></div>
+    <button class="btn danger" data-action="give-up">Vzdát se hry</button>`;
   }
   return `
   <h2>Kdo je vrah?</h2>
   <div class="lede">Máš všechny indicie. Vyber jednu možnost — odpověď nelze poté změnit.</div>
   <div id="options">${SUSPECT_OPTIONS.map(o=>`<button class="option ${S.pickedOption===o?'picked':''}" data-action="pick" data-opt="${escapeHtml(o)}">${escapeHtml(o)}</button>`).join('')}</div>
-  <button class="btn" data-action="submit-verdict" ${S.pickedOption?'':'disabled'}>Odeslat obvinění</button>`;
+  <button class="btn" data-action="submit-verdict" ${S.pickedOption?'':'disabled'}>Odeslat obvinění</button>
+  <button class="btn danger secondary" data-action="give-up" style="background:transparent; color:var(--wine-bright); border-color:var(--wine);">Vzdát se hry</button>`;
 }
 async function submitVerdict(){
   if(!S.pickedOption) return;
   if(!confirm('Opravdu obvinit „'+S.pickedOption+'“? Odpověď už nelze změnit.')) return;
   S.team.answer = S.pickedOption; S.team.answerAt = Date.now();
+  await saveTeam(S.team); render();
+}
+async function giveUp(){
+  if(!confirm('Opravdu se vzdát hry? Tohle nelze vrátit zpět.')) return;
+  S.team.answer = GIVE_UP; S.team.answerAt = Date.now();
   await saveTeam(S.team); render();
 }
 
@@ -398,7 +376,8 @@ function renderBoardTab(){
   });
   return `<h2>Žebříček</h2>${sorted.map((tm,i)=>{
     const done=!!tm.answer, stat = done ? fmtTime(tm.answerAt-tm.startTime) : `${tm.collected.length}/${TOTAL_CLUES}`;
-    return `<div class="lb-row"><div class="lb-rank">${i+1}.</div><div class="lb-name"><div class="t">${escapeHtml(tm.name)} ${done?'<span class="badge-done">Hotovo</span>':''}</div><div class="p">${escapeHtml(tm.players||'')}</div></div><div class="lb-stat">${stat}</div></div>`;
+    const badge = tm.answer===GIVE_UP ? '<span class="badge-done" style="background:var(--wine-bright);">Vzdáno</span>' : (done ? '<span class="badge-done">Hotovo</span>' : '');
+    return `<div class="lb-row"><div class="lb-rank">${i+1}.</div><div class="lb-name"><div class="t">${escapeHtml(tm.name)} ${badge}</div><div class="p">${escapeHtml(tm.players||'')}</div></div><div class="lb-stat">${stat}</div></div>`;
   }).join('')}`;
 }
 async function refreshBoard(){ S.boardTeams = await listTeams(); if(S.mode==='game' && S.tab==='board') render(); }
@@ -408,6 +387,7 @@ function viewAdmin(){ return `<div class="topbar"><div class="team-name">Organiz
 async function renderAdminContent(){
   const el = document.getElementById('admin-content'); if(!el) return;
   const status = await getStatus(); const teams = await listTeams();
+  S.adminStatus = status;
   const sorted = teams.slice().sort((a,b)=>{
     const aDone=!!a.answer, bDone=!!b.answer;
     if(aDone&&bDone) return (a.answerAt-a.startTime)-(b.answerAt-b.startTime);
@@ -423,7 +403,7 @@ async function renderAdminContent(){
       <tr><th>Tým</th><th>Hráči</th><th>Postup</th><th>Čas</th><th>Obvinění</th></tr>
       ${sorted.map(t=>{
         const elapsed = t.answer ? (t.answerAt-t.startTime) : (t.startTime ? Date.now()-t.startTime : null);
-        const verdict = t.answer ? `${escapeHtml(t.answer)} ${t.answer===CORRECT_ANSWER?'✅':'❌'}` : '–';
+        const verdict = !t.answer ? '–' : (t.answer===GIVE_UP ? 'Vzdali se' : `${escapeHtml(t.answer)} ${t.answer===CORRECT_ANSWER?'✅':'❌'}`);
         return `<tr><td>${escapeHtml(t.name)}</td><td>${escapeHtml(t.players||'')}</td><td>${t.collected.length}/${TOTAL_CLUES}</td><td>${elapsed!=null?fmtTime(elapsed):'–'}</td><td>${verdict}</td></tr>`;
       }).join('') || `<tr><td colspan="5" class="note">Zatím se nezaregistroval žádný tým.</td></tr>`}
     </table>
@@ -431,7 +411,15 @@ async function renderAdminContent(){
     <button class="btn danger" data-action="reset-game">Vynulovat všechna data (test)</button>
     <div class="note">Správná odpověď je „${CORRECT_ANSWER}“. Panel se obnovuje automaticky.</div>`;
 }
-async function toggleStatus(){ const cur = await getStatus(); await setStatus(cur==='live' ? 'waiting' : 'live'); renderAdminContent(); }
+async function toggleStatus(){
+  const sw = document.querySelector('.switch');
+  const label = document.querySelector('.admin-toggle > div > div');
+  const newStatus = S.adminStatus === 'live' ? 'waiting' : 'live';
+  S.adminStatus = newStatus;
+  if(sw) sw.classList.toggle('on', newStatus==='live');
+  if(label) label.textContent = newStatus==='live' ? 'Hra běží' : 'Hra čeká';
+  setStatus(newStatus); // na pozadí, nečekáme
+}
 async function resetGame(){ if(!confirm('Smazat všechny týmy a jejich postup? Tuto akci nelze vrátit.')) return; await deleteAllTeams(); renderAdminContent(); }
 
 /* ============== HANDLERS ============== */
@@ -444,23 +432,23 @@ function attachHandlers(){
     if(action==='start') return doStart();
     if(action==='tab'){ if(btn.classList.contains('locked')) return; switchTab(btn.dataset.tab); return; }
     if(action==='open-clue'){ S.openClue = btn.dataset.clue; render(); return; }
-    if(action==='close-clue'){ S.openClue = null; render(); if(S.tab==='scan') startScanner(); return; }
+    if(action==='close-clue'){ S.openClue = null; render(); return; }
     if(action==='manual') return doManual();
     if(action==='pick'){ S.pickedOption = btn.dataset.opt; render(); return; }
     if(action==='submit-verdict') return submitVerdict();
+    if(action==='give-up') return giveUp();
     if(action==='toggle-status') return toggleStatus();
     if(action==='reset-game') return resetGame();
   };
   if(S.mode==='game'){
     clearInterval(S.tickTimer);
     S.tickTimer = setInterval(()=>{ const el = document.getElementById('timer-el'); if(el && S.team && S.team.startTime && !S.team.answer) el.textContent = fmtTime(Date.now()-S.team.startTime); },1000);
-    if(S.tab==='scan' && !S.team.answer) startScanner(); else stopScanner();
     if(S.tab==='board'){ refreshBoard(); clearInterval(S.boardTimer); S.boardTimer = setInterval(refreshBoard, 8000); }
     else clearInterval(S.boardTimer);
   }
   if(S.mode==='admin'){ renderAdminContent(); clearInterval(S.adminTimer); S.adminTimer = setInterval(renderAdminContent, 6000); }
 }
-function switchTab(tab){ stopScanner(); clearInterval(S.boardTimer); S.tab = tab; S.pickedOption = S.team && S.team.answer ? S.team.answer : null; render(); }
+function switchTab(tab){ clearInterval(S.boardTimer); S.tab = tab; S.pickedOption = S.team && S.team.answer ? S.team.answer : null; render(); }
 
 boot();
 </script>
