@@ -259,7 +259,7 @@ function viewGame(){
   const elapsed = finished ? (t.answerAt - t.startTime) : (Date.now() - t.startTime);
   const tabs = [
     {id:'zadani', label:'Zadání', icon:ICO.scroll},
-    {id:'scan', label:'Skenovat', icon:ICO.camera},
+    {id:'scan', label:'Zadat kód', icon:ICO.quill},
     {id:'clues', label:'Indicie', icon:ICO.grid, dot: t.collected.length<TOTAL_CLUES},
     {id:'verdict', label:'Vrah?', icon:ICO.skull, locked: t.collected.length<TOTAL_CLUES},
     {id:'board', label:'Žebříček', icon:ICO.trophy},
